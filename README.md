@@ -14,6 +14,12 @@ CFI MIDOT scrapes financial data from [GuideStar Israel](https://www.guidestar.o
 | **Rank** | Calculates rankings based on growth, balance, and income stability |
 | **Upload** | Publishes ranked results to Google Sheets |
 
+### Published Results
+
+The ranking data is published to the public Google Sheets:
+
+📊 **[NGOs Ranking - מדד האיתנות הפיננסית](https://docs.google.com/spreadsheets/d/1eI2uTWCuE24f6SXdHyVQG09iJbOkymXHSTJnA6M6jHU/edit?usp=sharing)**
+
 ---
 
 ## Quick Start
@@ -28,7 +34,7 @@ CFI MIDOT scrapes financial data from [GuideStar Israel](https://www.guidestar.o
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/CFI_MIDOT.git
+git clone https://github.com/itchenak/CFI_MIDOT.git
 cd CFI_MIDOT
 
 # Create virtual environment
@@ -112,8 +118,8 @@ docker-compose up scrape
 docker-compose up rank
 docker-compose up upload
 
-# Run full pipeline
-docker-compose up pipeline
+# Or run all stages sequentially
+docker-compose up scrape && docker-compose up rank && docker-compose up upload
 ```
 
 ---

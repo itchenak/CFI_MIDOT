@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from scrapy.exporters import CsvItemExporter
 
 from scrapers.cfi_midot_scrapy.items import (
@@ -5,6 +7,10 @@ from scrapers.cfi_midot_scrapy.items import (
     NgoGeneralInfoSchema,
     NgoInfo,
 )
+
+# Resolve data directory path (works in both local and Docker environments)
+# When running from /app/src, go up one level to /app/data
+DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 
 
 def item_type(item):
@@ -20,8 +26,11 @@ class GuideStarMultiCSVExporter(object):
     ]
 
     def open_spider(self, spider):
+        # Ensure data directory exists
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        
         self.files = dict(
-            [(name, open(f"data/{name}.csv", "w+b")) for name in self.defined_items]
+            [(name, open(DATA_DIR / f"{name}.csv", "w+b")) for name in self.defined_items]
         )
         self.exporters = dict(
             [(name, CsvItemExporter(self.files[name])) for name in self.defined_items]

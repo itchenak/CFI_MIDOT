@@ -1,16 +1,6 @@
 version: '3.8'
 
 services:
-  # Run the full pipeline
-  pipeline:
-    build: .
-    container_name: cfi-midot-pipeline
-    env_file:
-      - .env
-    volumes:
-      - ./data:/app/data
-    command: python main.py
-
   # Run only the scrape job
   scrape:
     build: .
@@ -40,4 +30,3 @@ services:
     volumes:
       - ./data:/app/data
     command: python upload.py
-

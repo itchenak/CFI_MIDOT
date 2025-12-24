@@ -1,5 +1,6 @@
 from glob import glob
 import json
+from pathlib import Path
 from typing import Counter, List, Optional
 from marshmallow import fields
 from googleapiclient import discovery
@@ -15,8 +16,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Resolve paths relative to project root
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data"
+
 # Files to write from
-RANKED_FNAME = environ["RANKED_NGO_FNAME"]
+RANKED_FNAME = environ.get("RANKED_NGO_FNAME", "RankedNGOResult")
 # The ID of the spreadsheet to update.
 PUBLIC_SPREADSHEET_ID = environ["PUBLIC_SPREADSHEET_ID"]
 # How the input data should be interpreted.
@@ -51,10 +56,10 @@ def _get_ranked_sheet_schema(report_year: int) -> OrderedSchema:
         _ = fields.Str(dump_default=None)
 
         # -- Ranks --
-        main_rank_benchmark = fields.Number(
+        main_rank_benchmark = fields.Float(
             dump_default=None, data_key="ציון ממוצע לקטגורית מחזור"
         )
-        main_rank = fields.Number(
+        main_rank = fields.Float(
             dump_default=None, data_key=f"ציון כלכלי משוקלל לשנת {report_year}"
         )
 
@@ -67,48 +72,48 @@ def _get_ranked_sheet_schema(report_year: int) -> OrderedSchema:
 
         __ = fields.Str(dump_default=None)
         # -- Sub Ranks --
-        growth_rank = fields.Number(
+        growth_rank = fields.Float(
             dump_default=None, data_key=f"ציון {report_year}- צמיחה"
         )
-        balance_rank = fields.Number(
+        balance_rank = fields.Float(
             dump_default=None, data_key=f"ציון {report_year}- גירעון/יתרה"
         )
-        stability_rank = fields.Number(
+        stability_rank = fields.Float(
             dump_default=None, data_key=f"ציון {report_year}- גיוון מקורות הכנסה"
         )
         ___ = fields.Str(dump_default=None)
 
-        admin_expense_ratio = fields.Number(
+        admin_expense_ratio = fields.Float(
             attribute="admin_expense_ratio",
             allow_none=True,
             data_key="אחוז הוצאות עבור הנהלה",
         )
-        admin_expense_benchmark = fields.Number(
+        admin_expense_benchmark = fields.Float(
             dump_default=None, data_key="בנצמרק אחוז הנהלה"
         )
         ____ = fields.Str(dump_default=None)
         # -----------------------------------------------------------------------------------------------------------------------------------------------
 
         # Growth params---------------
-        growth_benchmark = fields.Number(dump_default=None, data_key="בנצמרק צמיחה")
-        growth_ratio = fields.Number(
+        growth_benchmark = fields.Float(dump_default=None, data_key="בנצמרק צמיחה")
+        growth_ratio = fields.Float(
             attribute="growth_ratio",
             data_key=f"אחוז צמיחה - {report_year}-{report_year-2}",
         )
-        yearly_turnover = fields.Number(
+        yearly_turnover = fields.Float(
             load_default=None, data_key=f"מחזור שנתי לשנת {report_year}"
         )
-        yearly_turnover_1 = fields.Number(
+        yearly_turnover_1 = fields.Float(
             load_default=None,
             attribute=f"yearly_turnover_{report_year-1}",
             data_key=f"מחזור שנתי לשנת {report_year-1}",
         )
-        yearly_turnover_2 = fields.Number(
+        yearly_turnover_2 = fields.Float(
             load_default=None,
             attribute=f"yearly_turnover_{report_year-2}",
             data_key=f"מחזור שנתי לשנת {report_year-2}",
         )
-        yearly_turnover_3 = fields.Number(
+        yearly_turnover_3 = fields.Float(
             load_default=None,
             attribute=f"yearly_turnover_{report_year-3}",
             data_key=f"מחזור שנתי לשנת {report_year-3}",
@@ -118,69 +123,69 @@ def _get_ranked_sheet_schema(report_year: int) -> OrderedSchema:
         # -----------------------------------------------------------------------------------------------------------------------------------------------
 
         # Profit Params-------------------
-        balance_benchmark = fields.Number(dump_default=None, data_key="בנצמרק גרעון")
-        balance_ratio = fields.Number(
+        balance_benchmark = fields.Float(dump_default=None, data_key="בנצמרק גרעון")
+        balance_ratio = fields.Float(
             attribute="balance_ratio", data_key=f"אחוז יתרה לשנת {report_year}"
         )
-        last_annual_balance = fields.Number(
+        last_annual_balance = fields.Float(
             attribute="annual_balance", data_key=f"יתרה לשנת {report_year}"
         )
         ______ = fields.Str(dump_default=None)
         # -----------------------------------------------------------------------------------------------------------------------------------------------
 
         # Stability Params
-        max_income_benchmark = fields.Number(dump_default=None, data_key="בנצמרק גיוון")
+        max_income_benchmark = fields.Float(dump_default=None, data_key="בנצמרק גיוון")
         max_income_source_label = fields.String(
             attribute="max_income_source_label",
             allow_none=True,
             data_key="מקור הכנסה מרכזי",
         )
-        max_income_ratio = fields.Number(
+        max_income_ratio = fields.Float(
             attribute="max_income_ratio",
             allow_none=True,
             data_key="אחוז מקור הכנסה מרכזי ביחס לסך הכנסות",
         )
 
         # Income sources ratios
-        total_allocations_income_ratio = fields.Number(
+        total_allocations_income_ratio = fields.Float(
             attribute="total_allocations_income_ratio",
             allow_none=True,
             data_key="אחוז הכנסות מהקצאות",
         )
-        total_donations_income_ratio = fields.Number(
+        total_donations_income_ratio = fields.Float(
             attribute="total_donations_income_ratio",
             allow_none=True,
             data_key="אחוז הכנסות מתרומות",
         )
-        total_service_income_ratio = fields.Number(
+        total_service_income_ratio = fields.Float(
             attribute="total_service_income_ratio",
             allow_none=True,
             data_key="אחוז הכנסות מפעילות",
         )
-        total_other_income_ratio = fields.Number(
+        total_other_income_ratio = fields.Float(
             attribute="total_other_income_ratio",
             allow_none=True,
             data_key="אחוז הכנסות אחרות",
         )
         # Computed totals
-        total_allocations_income = fields.Number(
+        total_allocations_income = fields.Float(
             attribute="total_allocations_income", data_key="הכנסות מהקצאות"
         )
-        total_donations_income = fields.Number(
+        total_donations_income = fields.Float(
             attribute="total_donations_income", data_key="הכנסות מתרומות"
         )
-        total_service_income = fields.Number(
+        total_service_income = fields.Float(
             attribute="total_service_income", data_key="הכנסות מפעילות"
         )
-        total_other_income = fields.Number(
+        total_other_income = fields.Float(
             attribute="total_other_income", data_key="הכנסות אחרות"
         )
         _______ = fields.Str(dump_default=None)
 
         # -----------------------------------------------------------------------------------------------------------------------------------------------
         # Mangemnet
-        expenses_for_management = fields.Number(attribute="expenses_for_management")
-        expenses_salary_for_management = fields.Number(
+        expenses_for_management = fields.Float(attribute="expenses_for_management")
+        expenses_salary_for_management = fields.Float(
             attribute="expenses_salary_for_management"
         )
         ________ = fields.Str(dump_default=None)
@@ -224,53 +229,53 @@ def _get_ranked_sheet_schema(report_year: int) -> OrderedSchema:
         _________ = fields.Str(dump_default=None)
 
         # Additional ratios
-        program_expense_ratio = fields.Number(
+        program_expense_ratio = fields.Float(
             attribute="program_expense_ratio",
             allow_none=True,
             data_key="אחוז הוצאות עבור פעילות",
         )
 
-        total_expenses = fields.Number(
+        total_expenses = fields.Float(
             attribute="total_expenses", data_key='סה"כ הוצאות'
         )
 
         # Detailed financial info
-        expenses_other = fields.Number(attribute="expenses_other")
-        expenses_for_activities = fields.Number(attribute="expenses_for_activities")
-        expenses_salary_for_activities = fields.Number(
+        expenses_other = fields.Float(attribute="expenses_other")
+        expenses_for_activities = fields.Float(attribute="expenses_for_activities")
+        expenses_salary_for_activities = fields.Float(
             attribute="expenses_salary_for_activities"
         )
-        other_expenses_for_activities = fields.Number(
+        other_expenses_for_activities = fields.Float(
             attribute="other_expenses_for_activities"
         )
 
-        allocations_from_government = fields.Number(
+        allocations_from_government = fields.Float(
             attribute="allocations_from_government"
         )
-        allocations_from_local_authority = fields.Number(
+        allocations_from_local_authority = fields.Float(
             attribute="allocations_from_local_authority"
         )
-        allocations_from_other_sources = fields.Number(
+        allocations_from_other_sources = fields.Float(
             attribute="allocations_from_other_sources"
         )
 
-        donations_from_aboard = fields.Number(attribute="donations_from_aboard")
-        donations_from_israel = fields.Number(attribute="donations_from_israel")
-        donations_of_monetary_value = fields.Number(
+        donations_from_aboard = fields.Float(attribute="donations_from_aboard")
+        donations_from_israel = fields.Float(attribute="donations_from_israel")
+        donations_of_monetary_value = fields.Float(
             attribute="donations_of_monetary_value"
         )
 
-        service_income_from_country = fields.Number(
+        service_income_from_country = fields.Float(
             attribute="service_income_from_country"
         )
-        service_income_from_local_authority = fields.Number(
+        service_income_from_local_authority = fields.Float(
             attribute="service_income_from_local_authority"
         )
-        service_income_from_other = fields.Number(attribute="service_income_from_other")
-        other_income_from_other_sources = fields.Number(
+        service_income_from_other = fields.Float(attribute="service_income_from_other")
+        other_income_from_other_sources = fields.Float(
             attribute="other_income_from_other_sources"
         )
-        other_income_members_fee = fields.Number(attribute="other_income_members_fee")
+        other_income_members_fee = fields.Float(attribute="other_income_members_fee")
 
     return RankedSheetSchema
 
@@ -528,7 +533,7 @@ def _get_publish_sheet_values(
 def load_all_ranked_years() -> List[list]:
     # Find all available ranking csv files and load them to dataframe.
     ranked_years = []
-    ranked_files = glob(f"data/{RANKED_FNAME}_*.csv")
+    ranked_files = glob(str(DATA_DIR / f"{RANKED_FNAME}_*.csv"))
     for ranked_file in ranked_files:
         ranked_year = pd.read_csv(ranked_file)
         ranked_year.replace(np.nan, "", inplace=True)

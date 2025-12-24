@@ -7,8 +7,9 @@ This module publishes the ranked NGO data to Google Sheets.
 
 import os
 import logging
-import pandas as pd
+from pathlib import Path
 from glob import glob
+import pandas as pd
 from uploaders.google_sheet import upload_spread_sheet
 
 logging.basicConfig(
@@ -17,6 +18,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Resolve paths relative to project root
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+
 FINANCIAL_REPORT_FNAME = "NgoFinanceInfo"
 RANKED_FNAME = os.environ.get("RANKED_NGO_FNAME", "RankedNGOResult")
 
@@ -24,7 +29,7 @@ RANKED_FNAME = os.environ.get("RANKED_NGO_FNAME", "RankedNGOResult")
 def load_ranked_data() -> list[pd.DataFrame]:
     """Load all ranked NGO data from CSV files."""
     ranked_dfs = []
-    ranked_files = sorted(glob(f"data/{RANKED_FNAME}_*.csv"))
+    ranked_files = sorted(glob(str(DATA_DIR / f"{RANKED_FNAME}_*.csv")))
     
     for ranked_file in ranked_files:
         logger.info(f"Loading ranked data from {ranked_file}")
@@ -43,6 +48,7 @@ def run_upload(ranked_dfs: list[pd.DataFrame] | None = None) -> None:
                    will load from CSV files.
     """
     logger.info("Starting upload to Google Sheets...")
+    logger.info(f"Data directory: {DATA_DIR}")
     
     # Load ranked data if not provided
     if ranked_dfs is None:
@@ -53,7 +59,7 @@ def run_upload(ranked_dfs: list[pd.DataFrame] | None = None) -> None:
         return
     
     # Load general NGO info
-    general_info_path = "data/NgoGeneralInfo.csv"
+    general_info_path = DATA_DIR / "NgoGeneralInfo.csv"
     logger.info(f"Loading general NGO info from {general_info_path}")
     ngo_general_info = pd.read_csv(general_info_path)
     
@@ -66,4 +72,3 @@ def run_upload(ranked_dfs: list[pd.DataFrame] | None = None) -> None:
 
 if __name__ == "__main__":
     run_upload()
-
