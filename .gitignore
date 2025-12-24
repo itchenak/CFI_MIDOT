@@ -1,7 +1,63 @@
-*.egg-info
-__pycache__
-.vscode
-results/*
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.dll
+*.spec
+
+# Data files (generated, can be large)
+data/*.csv
+data/*.json
+!data/.gitkeep
+
+# Credentials (never commit!)
 *.json
+!scrapy.cfg
+
+# Environment files
+.env
+.env.*
 .python-version
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PyInstaller / Inno Setup
+*.spec
+setup.iss
+*Installer.exe
+
+# Temporary
+*.tmp
+*.bak
 /app

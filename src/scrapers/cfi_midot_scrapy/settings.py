@@ -1,4 +1,4 @@
-# Scrapy settings for cfi_midot project
+# Scrapy settings for cfi_midot_scrapy project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -6,23 +6,61 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+from os import environ
 
-BOT_NAME = "cfi_midot"
+LOG_LEVEL = environ.get("LOG_LEVEL", "INFO")
 
-SPIDER_MODULES = ["cfi_midot.spiders"]
-NEWSPIDER_MODULE = "cfi_midot.spiders"
+BOT_NAME = "cfi_midot_scrapy"
+
+SPIDER_MODULES = ["scrapers.cfi_midot_scrapy.spiders"]
+NEWSPIDER_MODULE = "scrapers.cfi_midot_scrapy.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = 'cfi_midot (+http://www.yourdomain.com)'
+# USER_AGENT = 'cfi_midot_scrapy (+http://www.yourdomain.com)'
 
 FEED_EXPORT_ENCODING = "utf-8"
-# Obey robots.txt rules
-ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 1024
+CONCURRENT_REQUESTS = 256
+# Obey robots.txt rules
+ROBOTSTXT_OBEY = False
 
+DOWNLOAD_DELAY = 0
+DOWNLOAD_TIMEOUT = 30
+RANDOMIZE_DOWNLOAD_DELAY = True
+
+REACTOR_THREADPOOL_MAXSIZE = 128
+CONCURRENT_REQUESTS = 256
+CONCURRENT_REQUESTS_PER_DOMAIN = 256
+CONCURRENT_REQUESTS_PER_IP = 256
+
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 1
+AUTOTHROTTLE_MAX_DELAY = 0.25
+AUTOTHROTTLE_TARGET_CONCURRENCY = 128
+AUTOTHROTTLE_DEBUG = True
+
+RETRY_ENABLED = True
+RETRY_TIMES = 3
+RETRY_HTTP_CODES = [
+    500,
+    502,
+    503,
+    504,
+    400,
+    401,
+    403,
+    404,
+    405,
+    406,
+    407,
+    408,
+    409,
+    410,
+    429,
+]
+# ----
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
@@ -46,13 +84,13 @@ CONCURRENT_REQUESTS = 1024
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'cfi_midot.middlewares.CfimidotSpiderMiddleware': 543,
+#    'scrapers.cfi_midot_scrapy.middlewares.CfimidotSpiderMiddleware': 543,
 # }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 # DOWNLOADER_MIDDLEWARES = {
-#    'cfi_midot.middlewares.CfimidotDownloaderMiddleware': 543,
+#    'scrapers.cfi_midot_scrapy.middlewares.CfimidotDownloaderMiddleware': 543,
 # }
 
 # Enable or disable extensions
@@ -64,10 +102,8 @@ CONCURRENT_REQUESTS = 1024
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "cfi_midot.pipelines.GuideStarMultiCSVExporter": 100,
+    "scrapers.cfi_midot_scrapy.pipelines.GuideStarMultiCSVExporter": 1000,
 }
-LOG_LEVEL = "INFO"
-REACTOR_THREADPOOL_MAXSIZE = 256
 
 
 # Enable and configure the AutoThrottle extension (disabled by default)

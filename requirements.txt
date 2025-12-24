@@ -1,4 +1,23 @@
-Scrapy==2.5.1
-attrs_strict
-marshmallow
-marshmallow-enum
+# Web Scraping
+Scrapy>=2.11.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Serialization
+marshmallow>=3.20.0
+marshmallow-enum>=1.5.1
+attrs-strict>=1.0.0
+
+# HTTP Requests
+requests>=2.31.0
+
+# Google Sheets API
+google-auth>=2.23.0
+google-api-python-client>=2.100.0
+
+# Development (optional)
+# pytest>=7.4.0
+# black>=23.0.0
+# ruff>=0.1.0

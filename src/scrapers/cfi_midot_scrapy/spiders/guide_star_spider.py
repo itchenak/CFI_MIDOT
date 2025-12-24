@@ -4,8 +4,11 @@ import re
 from typing import Callable, Iterator, Union
 
 import scrapy
-from cfi_midot.items import NgoInfo
-from cfi_midot.items_loaders import RESOURCE_NAME_TO_METHOD_NAME, load_ngo_info
+from scrapers.cfi_midot_scrapy.items import NgoInfo
+from scrapers.cfi_midot_scrapy.items_loaders import (
+    RESOURCE_NAME_TO_METHOD_NAME,
+    load_ngo_info,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +130,9 @@ class GuideStarSpider(scrapy.Spider):
         ngo_id = response.meta["ngo_id"]
         logger.debug("Starting Parsing of xml_data for: %s", ngo_id)
         ngo_scraped_data = response.json()
-        self._validate_all_resources_arrived_successfully(ngo_scraped_data, ngo_id)
+        if not self._validate_all_resources_arrived_successfully(ngo_scraped_data, ngo_id):
+            return
+
         ngo_info_item = load_ngo_info(ngo_id, ngo_scraped_data)
         logger.debug("Finish Parsing xml_data for: %s", ngo_id)
 
@@ -146,6 +151,8 @@ class GuideStarSpider(scrapy.Spider):
                     f"Failed to scrap ngo: {ngo_id}, Returned status code: {scraped_resource['statusCode']}"
                 )
             if not scraped_resource["result"]["success"]:
-                raise Exception(
+                logger.warning(
                     f"Failed to scrap ngo: {ngo_id}. Failed to get one or more malkar resources"
                 )
+                return False
+        return True

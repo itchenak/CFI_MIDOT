@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Run the full pipeline
+  pipeline:
+    build: .
+    container_name: cfi-midot-pipeline
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: python main.py
+
+  # Run only the scrape job
+  scrape:
+    build: .
+    container_name: cfi-midot-scrape
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: python scrape.py
+
+  # Run only the rank job
+  rank:
+    build: .
+    container_name: cfi-midot-rank
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: python rank.py
+
+  # Run only the upload job
+  upload:
+    build: .
+    container_name: cfi-midot-upload
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: python upload.py
+

@@ -1,18 +1,41 @@
-import pkg_resources
-import setuptools
+from setuptools import setup, find_packages
+from pathlib import Path
 
+# Read requirements
+requirements = Path("requirements.txt").read_text().splitlines()
+requirements = [r.strip() for r in requirements if r.strip() and not r.startswith("#")]
 
-with open("./requirements.txt") as f:
-    install_requires = [str(r) for r in pkg_resources.parse_requirements(f)]
+# Read README
+readme = Path("README.md").read_text(encoding="utf-8")
 
-setuptools.setup(
-    name="cfi_midot",
+setup(
+    name="cfi-midot",
     version="1.0.0",
-    author="CFIMIDOT",
-    author_email="version.ilan@gmail.com",
-    description="Tool to analyse NGOs in Israel",
-    packages=["cfi_midot"],
-    install_requires=[
-        *install_requires,
+    author="CFI MIDOT",
+    author_email="itchenak@gmail.com",
+    description="Financial ranking tool for Israeli NGOs",
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    url="https://github.com/itchenak/CFI_MIDOT",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    python_requires=">=3.10",
+    install_requires=requirements,
+    entry_points={
+        "console_scripts": [
+            "cfi-scrape=scrape:run_scrape",
+            "cfi-rank=rank:run_rank",
+            "cfi-upload=upload:run_upload",
+        ]
+    },
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
 )

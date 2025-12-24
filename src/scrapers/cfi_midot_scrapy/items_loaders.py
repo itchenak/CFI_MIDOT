@@ -1,6 +1,6 @@
 import logging
 
-from cfi_midot.items import (
+from scrapers.cfi_midot_scrapy.items import (
     NgoFinanceInfo,
     NgoGeneralInfo,
     NgoInfo,
@@ -75,7 +75,7 @@ def _malkar_finance_parser(
     ngo_finance_objects = []
     for data in scraped_data:
         ngo_finance_pyaload = _map_between_scraped_and_ngo_item(
-            finance_data_mapper, data  
+            finance_data_mapper, data
         )
         ngo_finance_objects.append(NgoFinanceInfo(ngo_id=ngo_id, **ngo_finance_pyaload))
     return ngo_finance_objects

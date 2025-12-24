@@ -1,12 +1,10 @@
 from scrapy.exporters import CsvItemExporter
 
-from cfi_midot.items import (
+from scrapers.cfi_midot_scrapy.items import (
     NgoFinanceInfoSchema,
     NgoGeneralInfoSchema,
     NgoInfo,
 )
-from os import environ
-
 
 
 def item_type(item):
@@ -14,12 +12,16 @@ def item_type(item):
 
 
 class GuideStarMultiCSVExporter(object):
-    defined_items = ["NgoFinanceInfo", "NgoTopRecipientsSalaries", 
-                     "filtered_ngos", "NgoGeneralInfo"]
+    defined_items = [
+        "NgoFinanceInfo",
+        "NgoTopRecipientsSalaries",
+        "filtered_ngos",
+        "NgoGeneralInfo",
+    ]
 
     def open_spider(self, spider):
         self.files = dict(
-            [(name, open(f"results/{name}.csv", "w+b")) for name in self.defined_items]
+            [(name, open(f"data/{name}.csv", "w+b")) for name in self.defined_items]
         )
         self.exporters = dict(
             [(name, CsvItemExporter(self.files[name])) for name in self.defined_items]

@@ -10,20 +10,15 @@ from itertools import count
 import pandas as pd
 import numpy as np
 
-from cfi_midot.items import OrderedSchema
+from scrapers.cfi_midot_scrapy.items import OrderedSchema
 import logging
 
 logger = logging.getLogger(__name__)
 
 # Files to write from
-UNRANKED_FNAME = environ["UNRANKED_NGO_FNAME"]
 RANKED_FNAME = environ["RANKED_NGO_FNAME"]
 # The ID of the spreadsheet to update.
 PUBLIC_SPREADSHEET_ID = environ["PUBLIC_SPREADSHEET_ID"]
-APPSHEET_SPREADSHEET_ID = environ["APPSHEET_SPREADSHEET_ID"]
-APPSHEET_SHEET_ID = int(environ["APPSHEET_SHEET_ID"])
-UNRANKED_SHEET_ID = int(environ["UNRANKED_SHEET_ID"])
-RANKED_SHEET_ID = int(environ["RANKED_SHEET_ID"])
 # How the input data should be interpreted.
 VALUE_INPUT_OPTION = "RAW"
 # Google sheet credentials
@@ -189,6 +184,93 @@ def _get_ranked_sheet_schema(report_year: int) -> OrderedSchema:
             attribute="expenses_salary_for_management"
         )
         ________ = fields.Str(dump_default=None)
+        # -----------------------------------------------------------------------------------------------------------------------------------------------
+        # Unused Params
+        ngo_year_founded = fields.Integer(
+            attribute="ngo_year_founded",
+            allow_none=True,
+            data_key="שנת הקמה",
+        )
+
+        volunteers_num = fields.Integer(
+            attribute="volunteers_num",
+            allow_none=True,
+            data_key="מספר מתנדבים",
+        )
+        employees_num = fields.Integer(
+            attribute="employees_num",
+            allow_none=True,
+            data_key="מספר עובדים",
+        )
+        ngo_members_num = fields.Integer(
+            attribute="ngo_members_num",
+            allow_none=True,
+            data_key="מספר חברים",
+        )
+
+        target_audience = fields.Str(
+            attribute="target_audience",
+            allow_none=True,
+            data_key="קהל יעד",
+        )
+        activity_fields = fields.Str(
+            attribute="activity_fields",
+            allow_none=True,
+            data_key="תחומי פעילות",
+        )
+        ngo_goal = fields.Str(
+            attribute="ngo_goal", allow_none=True, data_key="מטרת העמותה"
+        )
+        _________ = fields.Str(dump_default=None)
+
+        # Additional ratios
+        program_expense_ratio = fields.Number(
+            attribute="program_expense_ratio",
+            allow_none=True,
+            data_key="אחוז הוצאות עבור פעילות",
+        )
+
+        total_expenses = fields.Number(
+            attribute="total_expenses", data_key='סה"כ הוצאות'
+        )
+
+        # Detailed financial info
+        expenses_other = fields.Number(attribute="expenses_other")
+        expenses_for_activities = fields.Number(attribute="expenses_for_activities")
+        expenses_salary_for_activities = fields.Number(
+            attribute="expenses_salary_for_activities"
+        )
+        other_expenses_for_activities = fields.Number(
+            attribute="other_expenses_for_activities"
+        )
+
+        allocations_from_government = fields.Number(
+            attribute="allocations_from_government"
+        )
+        allocations_from_local_authority = fields.Number(
+            attribute="allocations_from_local_authority"
+        )
+        allocations_from_other_sources = fields.Number(
+            attribute="allocations_from_other_sources"
+        )
+
+        donations_from_aboard = fields.Number(attribute="donations_from_aboard")
+        donations_from_israel = fields.Number(attribute="donations_from_israel")
+        donations_of_monetary_value = fields.Number(
+            attribute="donations_of_monetary_value"
+        )
+
+        service_income_from_country = fields.Number(
+            attribute="service_income_from_country"
+        )
+        service_income_from_local_authority = fields.Number(
+            attribute="service_income_from_local_authority"
+        )
+        service_income_from_other = fields.Number(attribute="service_income_from_other")
+        other_income_from_other_sources = fields.Number(
+            attribute="other_income_from_other_sources"
+        )
+        other_income_members_fee = fields.Number(attribute="other_income_members_fee")
 
     return RankedSheetSchema
 
@@ -446,7 +528,7 @@ def _get_publish_sheet_values(
 def load_all_ranked_years() -> List[list]:
     # Find all available ranking csv files and load them to dataframe.
     ranked_years = []
-    ranked_files = glob(f"./results/{RANKED_FNAME}_*.csv")
+    ranked_files = glob(f"data/{RANKED_FNAME}_*.csv")
     for ranked_file in ranked_files:
         ranked_year = pd.read_csv(ranked_file)
         ranked_year.replace(np.nan, "", inplace=True)
