@@ -12,13 +12,16 @@ CFI MIDOT scrapes financial data from [GuideStar Israel](https://www.guidestar.o
 |-------|-------------|
 | **Scrape** | Downloads registered NGO IDs from data.gov.il and scrapes financial reports |
 | **Rank** | Calculates rankings based on growth, balance, and income stability |
-| **Upload** | Publishes ranked results to Google Sheets |
+| **Upload** | Publishes ranked results to Google Sheets (weekly) |
+| **Upload AppSheet** | Publishes rankings to AppSheet (yearly, 2 years prior) |
 
 ### Published Results
 
-The ranking data is published to the public Google Sheets:
+The ranking data is published to:
 
-📊 **[NGOs Ranking - מדד האיתנות הפיננסית](https://docs.google.com/spreadsheets/d/1eI2uTWCuE24f6SXdHyVQG09iJbOkymXHSTJnA6M6jHU/edit?usp=sharing)**
+📊 **[NGOs Ranking - מדד האיתנות הפיננסית (Google Sheets)](https://docs.google.com/spreadsheets/d/1eI2uTWCuE24f6SXdHyVQG09iJbOkymXHSTJnA6M6jHU/edit?usp=sharing)** — Updated weekly
+
+📱 **[NGOs Ranking - מדד האיתנות הפיננסית (AppSheet)](https://midot.org.il/ngos-ranking)** — Updated yearly
 
 ---
 
@@ -81,14 +84,18 @@ python rank.py
 
 # Upload to Google Sheets
 python upload.py
+
+# Upload to AppSheet (yearly job)
+python upload_appsheet.py
 ```
 
 ### Using CLI Commands (after `pip install -e .`)
 
 ```bash
-cfi-scrape   # Run scraping
-cfi-rank     # Run ranking
-cfi-upload   # Run upload
+cfi-scrape           # Run scraping
+cfi-rank             # Run ranking
+cfi-upload           # Run upload
+cfi-upload-appsheet  # Run AppSheet upload
 ```
 
 ---
@@ -117,6 +124,7 @@ docker run --env-file .env -v $(pwd)/data:/app/data cfi-midot python upload.py
 docker-compose up scrape
 docker-compose up rank
 docker-compose up upload
+docker-compose up upload-appsheet
 
 # Or run all stages sequentially
 docker-compose up scrape && docker-compose up rank && docker-compose up upload
@@ -126,12 +134,20 @@ docker-compose up scrape && docker-compose up rank && docker-compose up upload
 
 ## GitHub Actions CI/CD
 
-The repository includes a GitHub Actions workflow (`.github/workflows/ngo-ranking-pipeline.yml`) that runs:
+The repository includes GitHub Actions workflows:
+
+### Main Pipeline (`.github/workflows/ngo-ranking-pipeline.yml`)
+
+Runs weekly and on push:
 
 1. **Build** — Creates Docker image
 2. **Scrape** — Downloads and scrapes NGO data
 3. **Rank** — Calculates financial rankings
 4. **Upload** — Publishes to Google Sheets
+
+### AppSheet Upload (`.github/workflows/appsheet-yearly-upload.yml`)
+
+Runs yearly on January 1st — uploads rankings (2 years prior) to AppSheet.
 
 ### Required Secrets
 
@@ -141,6 +157,7 @@ Add these to your repository settings (Settings → Secrets → Actions):
 |--------|-------------|
 | `RANKED_NGO_FNAME` | Output filename for rankings |
 | `PUBLIC_SPREADSHEET_ID` | Target Google Sheet ID |
+| `APPSHEET_SPREADSHEET_ID` | AppSheet Google Sheet ID |
 | `GOOGLE_CREDENTIALS_JSON` | Service account JSON |
 
 ---
@@ -153,6 +170,7 @@ CFI_MIDOT/
 │   ├── scrape.py              # Stage 1: Data collection
 │   ├── rank.py                # Stage 2: Ranking calculation
 │   ├── upload.py              # Stage 3: Google Sheets upload
+│   ├── upload_appsheet.py     # Stage 4: AppSheet upload
 │   ├── scrapers/              # Scrapy spiders and API clients
 │   ├── ranking/               # Ranking algorithms
 │   └── uploaders/             # Google Sheets integration

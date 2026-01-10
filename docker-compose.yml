@@ -30,3 +30,13 @@ services:
     volumes:
       - ./data:/app/data
     command: python upload.py
+
+  # Run only the AppSheet upload job (yearly)
+  upload-appsheet:
+    build: .
+    container_name: cfi-midot-upload-appsheet
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: python upload_appsheet.py

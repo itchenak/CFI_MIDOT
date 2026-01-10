@@ -1,11 +1,11 @@
 from glob import glob
 import json
 from pathlib import Path
-from typing import Counter, List, Optional
+from typing import List
 from marshmallow import fields
-from googleapiclient import discovery
 from pprint import pprint
 from os import environ
+from datetime import datetime
 from google.oauth2 import service_account
 from itertools import count
 import pandas as pd
@@ -22,8 +22,6 @@ DATA_DIR = PROJECT_ROOT / "data"
 
 # Files to write from
 RANKED_FNAME = environ.get("RANKED_NGO_FNAME", "RankedNGOResult")
-# The ID of the spreadsheet to update.
-PUBLIC_SPREADSHEET_ID = environ["PUBLIC_SPREADSHEET_ID"]
 # How the input data should be interpreted.
 VALUE_INPUT_OPTION = "RAW"
 # Google sheet credentials
@@ -544,9 +542,25 @@ def load_all_ranked_years() -> List[list]:
 def upload_spread_sheet(
     general_info: pd.DataFrame, ranked_dfs: List[pd.DataFrame]
 ) -> None:
+    """Upload ranked NGO data to the public Google spreadsheet."""
+    PUBLIC_SPREADSHEET_ID = environ["PUBLIC_SPREADSHEET_ID"]
+
     credentials = authenticate()
     prefix = "ngo_ranking_"
     publish_sheet_values = _get_publish_sheet_values(general_info, ranked_dfs)
     for year, ranks in publish_sheet_values.items():
         create_sheet_if_not_exists(credentials, PUBLIC_SPREADSHEET_ID, prefix, year)
         write_to_sheet(credentials, PUBLIC_SPREADSHEET_ID, f"{prefix}{year}", ranks)
+
+
+def upload_appsheet(general_info: pd.DataFrame, ranked_dfs: List[pd.DataFrame]) -> None:
+    """Upload NGO rankings to AppSheet (2 years ago from current date)."""
+    credentials = authenticate()
+    prefix = "ngo_ranking_"
+    target_year = datetime.now().year - 2
+    
+    publish_sheet_values = _get_publish_sheet_values(general_info, ranked_dfs)
+    ranks = publish_sheet_values[target_year]
+    
+    logger.info(f"Uploading AppSheet data for year {target_year}")
+    write_to_sheet(credentials, environ["APPSHEET_SPREADSHEET_ID"], f"{prefix}appsheet", ranks)

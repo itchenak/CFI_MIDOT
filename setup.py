@@ -26,6 +26,7 @@ setup(
             "cfi-scrape=scrape:run_scrape",
             "cfi-rank=rank:run_rank",
             "cfi-upload=upload:run_upload",
+            "cfi-upload-appsheet=upload_appsheet:run_upload_appsheet",
         ]
     },
     classifiers=[
