@@ -14,6 +14,7 @@ CFI MIDOT scrapes financial data from [GuideStar Israel](https://www.guidestar.o
 | **Rank** | Calculates rankings based on growth, balance, and income stability |
 | **Upload** | Publishes ranked results to Google Sheets (weekly) |
 | **Upload AppSheet** | Publishes rankings to AppSheet (yearly, 2 years prior) |
+| **Proper Management Check** | Compares current proper management status to a published CSV and emails changes |
 
 ### Published Results
 
@@ -64,6 +65,13 @@ export PUBLIC_SPREADSHEET_ID="your_spreadsheet_id"
 
 # Google credentials (JSON string)
 export GOOGLE_CREDENTIALS_JSON='{"type":"service_account",...}'
+
+# Proper management change notifications (Gmail SMTP)
+export GMAIL_SMTP_USER="you@gmail.com"
+export GMAIL_SMTP_PASSWORD="your_app_password"
+export EMAIL_FROM="you@gmail.com"
+export EMAIL_TO="recipient@example.com"
+export REMOTE_PROPER_MANAGEMENT_URL="https://raw.githubusercontent.com/itchenak/CFI_MIDOT/refs/heads/main/data/NgoProperManagement.csv"
 ```
 
 ---
@@ -87,6 +95,9 @@ python upload.py
 
 # Upload to AppSheet (yearly job)
 python upload_appsheet.py
+
+# Proper management status check + email notification
+python check_proper_management.py
 ```
 
 ### Using CLI Commands (after `pip install -e .`)
@@ -145,6 +156,12 @@ Runs weekly and on push:
 3. **Rank** — Calculates financial rankings
 4. **Upload** — Publishes to Google Sheets
 
+### Proper Management Notifications
+
+Run `python src/check_proper_management.py` after scraping. It compares the local
+`data/NgoProperManagement.csv` to the CSV at `REMOTE_PROPER_MANAGEMENT_URL` and
+emails any gained/lost proper management changes via Gmail SMTP.
+
 ### AppSheet Upload (`.github/workflows/appsheet-yearly-upload.yml`)
 
 Runs yearly on January 1st — uploads rankings (2 years prior) to AppSheet.
@@ -159,6 +176,11 @@ Add these to your repository settings (Settings → Secrets → Actions):
 | `PUBLIC_SPREADSHEET_ID` | Target Google Sheet ID |
 | `APPSHEET_SPREADSHEET_ID` | AppSheet Google Sheet ID |
 | `GOOGLE_CREDENTIALS_JSON` | Service account JSON |
+| `GMAIL_SMTP_USER` | Gmail address used for SMTP |
+| `GMAIL_SMTP_PASSWORD` | Gmail app password for SMTP |
+| `EMAIL_FROM` | Sender email address |
+| `EMAIL_TO` | Recipient email address(es) |
+| `REMOTE_PROPER_MANAGEMENT_URL` | URL to the published proper management CSV |
 
 ---
 
@@ -171,6 +193,7 @@ CFI_MIDOT/
 │   ├── rank.py                # Stage 2: Ranking calculation
 │   ├── upload.py              # Stage 3: Google Sheets upload
 │   ├── upload_appsheet.py     # Stage 4: AppSheet upload
+│   ├── check_proper_management.py # Proper management change notifications
 │   ├── scrapers/              # Scrapy spiders and API clients
 │   ├── ranking/               # Ranking algorithms
 │   └── uploaders/             # Google Sheets integration

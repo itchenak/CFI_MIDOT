@@ -43,6 +43,7 @@ def _malkar_details_parser(scraped_data: dict, ngo_id: int) -> NgoGeneralInfo:
         "tchumPeilutMain": "main_activity_field",
         "tchumPeilutSecondary": "activity_fields",
         "audience": "target_audience",
+        "hasProperManagement": "has_proper_management",
     }
     ngo_general = _map_between_scraped_and_ngo_item(general_data_mapper, scraped_data)
     return NgoGeneralInfo(ngo_id=ngo_id, **ngo_general)

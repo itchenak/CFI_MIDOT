@@ -1,5 +1,5 @@
 # Web Scraping
-Scrapy>=2.11.0
+Scrapy==2.14.1
 
 # Data Processing
 pandas>=2.0.0

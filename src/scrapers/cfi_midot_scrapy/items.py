@@ -90,6 +90,7 @@ class NgoTopRecipientsSalaries:
 class NgoGeneralInfo:
     ngo_id: int = attr.ib(converter=int)
     ngo_name: str
+    has_proper_management: bool
     ngo_year_founded: Optional[int] = None
     ngo_goal: Optional[str] = None
     volunteers_num: Optional[int] = None
@@ -400,6 +401,13 @@ class NgoTopRecipientsSalariesSchema(OrderedSchema):
     ngo_id = fields.Int()
     report_year = fields.Int()
     top_earners_salaries = fields.Nested(NgoTopRecipientSalarySchema, many=True)
+
+
+class NgoProperManagementSchema(OrderedSchema):
+    """Minimal schema for tracking proper management status changes."""
+    ngo_id = fields.Int()
+    ngo_name = fields.String()
+    has_proper_management = fields.Boolean()
 
 
 class NgoGeneralInfoSchema(OrderedSchema):

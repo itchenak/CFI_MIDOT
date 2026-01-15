@@ -33,7 +33,9 @@ RANDOMIZE_DOWNLOAD_DELAY = True
 REACTOR_THREADPOOL_MAXSIZE = 128
 CONCURRENT_REQUESTS = 256
 CONCURRENT_REQUESTS_PER_DOMAIN = 256
-CONCURRENT_REQUESTS_PER_IP = 256
+# NOTE: Scrapy's DownloaderAwarePriorityQueue does not support per-IP limits.
+# Keep per-domain throttling only to avoid scheduler initialization failures.
+# CONCURRENT_REQUESTS_PER_IP = 256
 
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 1

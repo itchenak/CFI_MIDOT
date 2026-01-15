@@ -5,6 +5,7 @@ from scrapy.exporters import CsvItemExporter
 from scrapers.cfi_midot_scrapy.items import (
     NgoFinanceInfoSchema,
     NgoGeneralInfoSchema,
+    NgoProperManagementSchema,
     NgoInfo,
 )
 
@@ -23,6 +24,7 @@ class GuideStarMultiCSVExporter(object):
         "NgoTopRecipientsSalaries",
         "filtered_ngos",
         "NgoGeneralInfo",
+        "NgoProperManagement",
     ]
 
     def open_spider(self, spider):
@@ -47,6 +49,11 @@ class GuideStarMultiCSVExporter(object):
                 self.exporters["NgoFinanceInfo"].export_item(report)
 
         if item.general_info:
+            # Export proper management status (minimal schema for tracking)
+            proper_management = NgoProperManagementSchema().dump(item.general_info)
+            self.exporters["NgoProperManagement"].export_item(proper_management)
+            
+            # Export general info (full schema)
             general_info = NgoGeneralInfoSchema().dump(item.general_info)
             self.exporters["NgoGeneralInfo"].export_item(general_info)
 
