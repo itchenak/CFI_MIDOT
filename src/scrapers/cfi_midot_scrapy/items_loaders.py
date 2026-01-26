@@ -26,7 +26,6 @@ def _map_between_scraped_and_ngo_item(data_mapper: dict, scraped_data: dict) -> 
     for malkar_attr_name, ngo_attr_name in data_mapper.items():
         scraped_data_value = scraped_data.get(malkar_attr_name)
         if scraped_data_value is None:
-            logger.debug("Missing %s in scraped NGO data", malkar_attr_name)
             continue
         ngo_item_data[ngo_attr_name] = scraped_data_value
     return ngo_item_data
@@ -44,6 +43,13 @@ def _malkar_details_parser(scraped_data: dict, ngo_id: int) -> NgoGeneralInfo:
         "tchumPeilutSecondary": "activity_fields",
         "audience": "target_audience",
         "hasProperManagement": "has_proper_management",
+
+        "addressHouseNum": "address_house_number",
+        "addressStreet": "address_street",
+        "city": "address_city",
+        "addressZipCode": "address_zip_code",
+        "phoneNumbers": "phone_numbers",
+        "emailMalkar": "email",
     }
     ngo_general = _map_between_scraped_and_ngo_item(general_data_mapper, scraped_data)
     return NgoGeneralInfo(ngo_id=ngo_id, **ngo_general)

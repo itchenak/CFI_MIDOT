@@ -101,6 +101,20 @@ class NgoGeneralInfo:
     activity_fields: Optional[list[str]] = None
     target_audience: Optional[list[str]] = None
 
+    address_house_number: Optional[str] = None
+    address_street: Optional[str] = None
+    address_city: Optional[str] = None
+    address_zip_code: Optional[str] = None
+    phone_numbers: Optional[list[str]] = None
+    email: Optional[str] = None
+
+    @property
+    def address(self) -> str:
+        return f"{self.address_street} {self.address_house_number}, {self.address_city}, {self.address_zip_code}"
+
+    @property
+    def phone_numbers_str(self) -> str:
+        return ", ".join(self.phone_numbers) if self.phone_numbers else None
 
 @attr.s(
     frozen=True, auto_attribs=True, kw_only=True, field_transformer=_add_type_validator
@@ -422,6 +436,10 @@ class NgoGeneralInfoSchema(OrderedSchema):
     main_activity_field = fields.String(allow_none=True)
     activity_fields = fields.List(fields.String(), allow_none=True)
     target_audience = fields.List(fields.String(), allow_none=True)
+
+    address = fields.String()
+    email = fields.String(allow_none=True)
+    phone_numbers_str = fields.String()
 
 
 class NgoFinanceInfoSchema(OrderedSchema):

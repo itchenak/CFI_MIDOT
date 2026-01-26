@@ -199,7 +199,7 @@ jobs:
           # Copy new data to replace the tracked file
           if [ -f data/NgoProperManagement.csv ]; then
             git add data/NgoProperManagement.csv -f
-            git diff --staged --quiet || git commit -m "Update proper management data [skip ci]"
+            git diff --staged --quiet || git commit -m "Update proper management data"
             git push
           fi
         env:
