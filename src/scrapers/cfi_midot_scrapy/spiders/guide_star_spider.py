@@ -42,7 +42,6 @@ def _get_vid(page_text):
 
 def generate_body_payload(
     resources: list[str],
-    ngo_num: int,
     page_text: str,
 ) -> list[dict]:
     csrf = _get_csrf(page_text)
@@ -54,7 +53,6 @@ def generate_body_payload(
             {
                 "action": "GSTAR_Ctrl",
                 "method": RESOURCE_NAME_TO_METHOD_NAME[resource],
-                "data": [ngo_num],
                 "type": "rpc",
                 "tid": 3 + resource_num,
                 "ctx": {"csrf": csrf, "ns": "", "vid": vid, "ver": 39},
@@ -100,30 +98,34 @@ class GuideStarSpider(scrapy.Spider):
         return request
 
     def start_requests(self) -> Iterator[scrapy.Request]:
-        for ngo_id in self.ngo_ids:
-            # Used to build body_payload for ngo_data request
-            helper_page_url = f"https://www.guidestar.org.il/organization/{ngo_id}"
+        ngo_id = self.ngo_ids[0]
+        # Used to build body_payload for ngo_data request
+        helper_page_url = f"https://www.guidestar.org.il/organization/{ngo_id}"
 
-            yield self.request(
-                url=helper_page_url,
-                ngo_id=ngo_id,
-                callback=self.scrape_xml_data,
-            )
+        yield self.request(
+            url=helper_page_url,
+            ngo_id=ngo_id,
+            callback=self.scrape_xml_data,
+        )
 
     def scrape_xml_data(self, helper_page_response) -> Iterator[scrapy.Request]:
-        ngo_id = helper_page_response.meta["ngo_id"]
         body_payload = generate_body_payload(
-            self.resources, ngo_id, helper_page_response.text
+            self.resources, helper_page_response.text
         )
-
-        yield scrapy.Request(
-            url=self.ngo_xml_data_url,
-            method="POST",
-            body=json.dumps(body_payload),
-            headers=HEADERS,
-            callback=self.parse,
-            meta=helper_page_response.meta,
-        )
+        meta = helper_page_response.meta
+        for ngo_id in self.ngo_ids:
+            for payload in body_payload:
+                payload["data"] = [ngo_id]
+            meta["ngo_id"] = ngo_id
+            
+            yield scrapy.Request(
+                url=self.ngo_xml_data_url,
+                method="POST",
+                body=json.dumps(body_payload),
+                headers=HEADERS,
+                callback=self.parse,
+                meta=helper_page_response.meta,
+            )
 
     def parse(self, response, **kwargs) -> Iterator[NgoInfo | dict]:
         """Parse NGO data from response"""
@@ -132,7 +134,6 @@ class GuideStarSpider(scrapy.Spider):
         ngo_scraped_data = response.json()
         if not self._validate_all_resources_arrived_successfully(ngo_scraped_data, ngo_id):
             return
-
         ngo_info_item = load_ngo_info(ngo_id, ngo_scraped_data)
         logger.debug("Finish Parsing xml_data for: %s", ngo_id)
 

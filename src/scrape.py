@@ -10,10 +10,8 @@ import logging
 from pathlib import Path
 from scrapers.api_interaction import download_registered_ngos_ids
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# Don't configure logging here - let Scrapy handle it via settings.py LOG_LEVEL
+# This way the LOG_LEVEL environment variable will work correctly
 logger = logging.getLogger(__name__)
 
 # Resolve paths relative to project root

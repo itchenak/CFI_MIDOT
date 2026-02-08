@@ -16,52 +16,36 @@ SPIDER_MODULES = ["scrapers.cfi_midot_scrapy.spiders"]
 NEWSPIDER_MODULE = "scrapers.cfi_midot_scrapy.spiders"
 
 
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = 'cfi_midot_scrapy (+http://www.yourdomain.com)'
+# Pretend to be a real browser so the site doesn't block based on User-Agent
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 
 FEED_EXPORT_ENCODING = "utf-8"
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 256
+CONCURRENT_REQUESTS = 64
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-DOWNLOAD_DELAY = 0
+# Minimum delay (seconds) between consecutive requests to the same domain.
+# RANDOMIZE_DOWNLOAD_DELAY adds 0.5x–1.5x jitter on top of this value.
+DOWNLOAD_DELAY = 0.2
 DOWNLOAD_TIMEOUT = 30
 RANDOMIZE_DOWNLOAD_DELAY = True
 
-REACTOR_THREADPOOL_MAXSIZE = 128
-CONCURRENT_REQUESTS = 256
-CONCURRENT_REQUESTS_PER_DOMAIN = 256
-# NOTE: Scrapy's DownloaderAwarePriorityQueue does not support per-IP limits.
-# Keep per-domain throttling only to avoid scheduler initialization failures.
-# CONCURRENT_REQUESTS_PER_IP = 256
+REACTOR_THREADPOOL_MAXSIZE = 64
+CONCURRENT_REQUESTS_PER_DOMAIN = 64
 
 AUTOTHROTTLE_ENABLED = True
-AUTOTHROTTLE_START_DELAY = 1
-AUTOTHROTTLE_MAX_DELAY = 0.25
-AUTOTHROTTLE_TARGET_CONCURRENCY = 128
+AUTOTHROTTLE_START_DELAY = 2
+AUTOTHROTTLE_MAX_DELAY = 30
+AUTOTHROTTLE_TARGET_CONCURRENCY = 32
 AUTOTHROTTLE_DEBUG = True
 
 RETRY_ENABLED = True
 RETRY_TIMES = 3
-RETRY_HTTP_CODES = [
-    500,
-    502,
-    503,
-    504,
-    400,
-    401,
-    403,
-    404,
-    405,
-    406,
-    407,
-    408,
-    409,
-    410,
-    429,
-]
+# Do NOT retry 403 — it means the site is actively blocking you;
+# retrying just makes the ban worse.
+RETRY_HTTP_CODES = [500, 502, 503, 504, 408, 429]
 # ----
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -71,17 +55,18 @@ RETRY_HTTP_CODES = [
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
 
-# Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+# Keep cookies enabled (default) — the site likely uses cookies to track sessions.
+COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
 
-# Override the default request headers:
-# DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-# }
+# Browser-like headers so the site doesn't flag requests as bots
+DEFAULT_REQUEST_HEADERS = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9,he;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+}
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
