@@ -42,7 +42,7 @@ def run_rank() -> list[pd.DataFrame]:
     
     # Sort the financial reports by year and group by report_year
     financial_df = financial_df.sort_values(by="report_year", ascending=True).groupby(
-        ["report_year"]
+        "report_year"
     )
     
     # Rank the NGOs for each year

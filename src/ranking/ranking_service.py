@@ -99,17 +99,12 @@ def rank_ngos(financial_df: DataFrameGroupBy) -> List[pd.DataFrame]:
     # To fixSettingWithCopyWarning:  https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
     pd.options.mode.chained_assignment = None  # default='warn'
 
-    available_years = sorted(financial_df.groups.keys())
-    max_year = max(available_years)
+    max_year = max(financial_df.groups.keys())
     # Merge the financial reports in order to calculate the ratios
     merged_df = pd.DataFrame()
     # Merge the grouped financial reports for each year
-    for year in available_years:
-        try:
-            group = financial_df.get_group(year)
-        except KeyError:
-            # Skip years that don't exist in the grouped data
-            continue
+    for year in financial_df.groups.keys():
+        group = financial_df.get_group(year)
         # Get the financial reports for the current year
         if merged_df.empty:
             merged_df = group
@@ -126,9 +121,6 @@ def rank_ngos(financial_df: DataFrameGroupBy) -> List[pd.DataFrame]:
 
     for year in years_to_rank:
         # Get the financial reports for the current year
-        # Skip if the year doesn't exist in the data
-        if year not in available_years:
-            continue
         financial_info = financial_df.get_group(year)
         # Add Multi-years ratios
         growth_ratios = merged_df.apply(
